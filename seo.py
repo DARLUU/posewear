@@ -63,7 +63,7 @@ def crumbs_ld(lang,cr,bid=None): return {"@type":"BreadcrumbList",**({"@id":bid}
 def crumbs_html(cr): return '<nav class="bc" aria-label="breadcrumb"><ol>'+''.join(f'<li>{"<a href=\""+u+"\">"+E(n)+"</a>" if u else "<span aria-current=\"page\">"+E(n)+"</span>"}</li>' for n,u in cr)+'</ol></nav>'
 def shell(lang,path,title,desc,body,ld,en=True,og=None,ogt='website'):
   P='/en' if lang=='en' else ''
-  nav=(f'<nav><a href="{P}/pose/">{LAB[lang]["pose"]}</a><a href="{P}/costume/">{LAB[lang]["costume"]}</a><a href="{P}/anime/">{LAB[lang]["anime"]}</a><a href="{P}/portrait/">{LAB[lang]["portrait"]}</a>'+
+  nav=(f'<nav><a href="{P}/pose/">{LAB[lang]["pose"]}</a><a href="{P}/costume/">{LAB[lang]["costume"]}</a><a href="{P}/anime/">{LAB[lang]["anime"]}</a><a href="{P}/portrait/">{LAB[lang]["portrait"]}</a><a href="https://github.com/atuizz/posewear" target="_blank" rel="noopener">GitHub</a>'+
     (f'<a href="/en{path}" hreflang="en" lang="en">EN</a>' if lang=='zh' and en else f'<a href="{path}" hreflang="zh-CN" lang="zh-CN">中文</a>' if lang=='en' else '')+'</nav>')
   foot=('Images from AI Pose Gallery / AI Costume Gallery (by @giaaibusi) and AI Portrait Gallery (by @agi_aibusi, CC0 1.0). All AI-generated. <a href="/en/">PoseWear home</a>' if lang=='en' else
     '图片来自 AI Pose Gallery / AI Costume Gallery（原作者 @giaaibusi）与 AI Portrait Gallery（@agi_aibusi，CC0 1.0），均为 AI 生成图，中文描述由本站整理。<a href="/">返回首页</a>')
