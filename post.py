@@ -7,9 +7,9 @@ A={}
 def put(name,data):
   b=data.encode() if isinstance(data,str) else data
   base,ext=name.rsplit('.',1);n=f'assets/{base}.{h8(b)}.{ext}';open(f'{D}/{n}','wb').write(b);A[name]=n;return n
-put('poses.json',PJ);put('costumes.json',CJ);put('portraits.json',RJ);put('depths.json',DJ)
+put('poses.json',PJ);put('costumes.json',CJ);put('anime.json',AJ);put('portraits.json',RJ);put('depths.json',DJ)
 for f in ['style.css','zip.js','extras.js','studio.js']: put(f,open(f'src/{f}','rb').read())
-app=open('src/app.js').read().replace("'poses.json'","'/"+A['poses.json']+"'").replace("'costumes.json'","'/"+A['costumes.json']+"'").replace("'portraits.json'","'/"+A['portraits.json']+"'").replace("'depths.json'","'/"+A['depths.json']+"'")
+app=open('src/app.js').read().replace("'poses.json'","'/"+A['poses.json']+"'").replace("'costumes.json'","'/"+A['costumes.json']+"'").replace("'anime.json'","'/"+A['anime.json']+"'").replace("'portraits.json'","'/"+A['portraits.json']+"'").replace("'depths.json'","'/"+A['depths.json']+"'")
 put('app.js',app)
 VER='posewear-v10-'+h8(''.join(A.values()))
 idx=open('src/index.html').read()
@@ -26,7 +26,7 @@ import base64
 inl=re.findall(r'<script>(.*?)</script>',idx,re.S)
 SH=' '.join("'sha256-"+base64.b64encode(hashlib.sha256(x.encode()).digest()).decode()+"'" for x in inl)
 # ---------- 静态详情页 ----------
-for d in ['pose','costume','portrait']:
+for d in ['pose','costume','anime','portrait']:
   if os.path.exists(f'{D}/{d}'): shutil.rmtree(f'{D}/{d}')
 CSS='''body{margin:0;font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:#111;background:#fff}a{color:inherit}
 header{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid #f0f0f0}header a{text-decoration:none;font-weight:700;display:flex;align-items:center;gap:8px}
@@ -91,6 +91,7 @@ open(f'{D}/_headers','w').write(f'''/*
 /assets/*
 {IMM}/p/*
 {IMM}/c/*
+{IMM}/a/*
 {IMM}/r/*
 {IMM}/o/*
 {IMM}/icon-*
@@ -106,6 +107,8 @@ open(f'{D}/_headers','w').write(f'''/*
 /pose/*
   Cache-Control: public, max-age=600
 /costume/*
+  Cache-Control: public, max-age=600
+/anime/*
   Cache-Control: public, max-age=600
 /portrait/*
   Cache-Control: public, max-age=600

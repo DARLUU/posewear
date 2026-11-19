@@ -14,6 +14,7 @@ import json, os, re, sys, time, urllib.request, concurrent.futures as cf
 SRC = {
     'pose': 'https://ai-pose-gallery.pages.dev/',
     'costume': 'https://ai-costume-gallery.pages.dev/',
+    'anime': 'https://ai-costume-anime-gallery.pages.dev/',
     'portrait': 'https://ai-portrait-gallery.pages.dev/',
 }
 OUT = os.environ.get('POSEWEAR_RAW', 'assets-raw')
@@ -57,14 +58,14 @@ def inline_data(html):
 def meta(lib):
     base, d = SRC[lib], os.path.join(OUT, lib)
     os.makedirs(d, exist_ok=True)
-    if lib in ('pose', 'costume'):
+    if lib in ('pose', 'costume', 'anime'):
         html = get(base).decode('utf-8')
         open(os.path.join(d, 'index.html'), 'w').write(html)
         data = inline_data(html)
         if 'D' not in data:
             sys.exit(f'{lib}: 页面结构可能已变化，没找到数据')
         json.dump(data, open(os.path.join(d, 'data.json'), 'w'), ensure_ascii=False)
-        keys = {'pose': ['サムネ', '原寸'], 'costume': ['画像', '原寸']}[lib]
+        keys = {'pose': ['サムネ', '原寸'], 'costume': ['画像', '原寸'], 'anime': ['サムネ', '画像', '原寸']}[lib]
         return [x[k] for x in data['D'] for k in keys if x.get(k)]
     for f in ('images.js', 'ranking.js'):
         open(os.path.join(d, f), 'wb').write(get(base + 'data/' + f))
