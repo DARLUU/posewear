@@ -22,6 +22,22 @@ UA = {'User-Agent': 'Mozilla/5.0 (PoseWear local build)'}
 WORKERS = 4
 
 
+def _curl(url, path):
+    """urllib 经代理时偶发 IncompleteRead 中断，curl 更稳，作为兜底。"""
+    import subprocess
+    if path is None:
+        r = subprocess.run(['curl', '-sS', '-A', UA['User-Agent'], '--max-time', '90', url],
+                           capture_output=True, timeout=120)
+        return r.stdout if r.returncode == 0 and r.stdout else None
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    r = subprocess.run(['curl', '-sS', '-A', UA['User-Agent'], '--max-time', '90', '-o', path + '.part', url],
+                       capture_output=True, timeout=120)
+    if r.returncode == 0 and os.path.getsize(path + '.part') > 0:
+        os.replace(path + '.part', path)
+        return os.path.getsize(path)
+    return 0
+
+
 def get(url, path=None, tries=4):
     if path and os.path.exists(path) and os.path.getsize(path) > 0:
         return 0
@@ -37,6 +53,9 @@ def get(url, path=None, tries=4):
         except Exception as e:
             err = e
             time.sleep(2 + i * 3)
+    r = _curl(url, path)
+    if r:
+        return r
     print('失败', url, err, flush=True)
     return None if path is None else 0
 

@@ -84,7 +84,7 @@ def add(sm,path,lm,imgs=(),en=True):
 def cardli(lang,kind,it,href=None):
   t=en_title(kind,it) if lang=='en' else zh_title(kind,it);w,h=TW[kind]
   href=href or (('/en' if lang=='en' and kind in HAS_EN else '')+f'/{kind}/{it["id"]}/')
-  return f'<li><a href="{href}"><img src="/{thumb(kind,it)}" alt="{E(t)}" width="{w}" height="{h}" loading="lazy" decoding="async"><span>{E(t)}</span></a></li>'
+  return f'<li><a href="{href}"><img src="{TU(thumb(kind,it))}" alt="{E(t)}" width="{w}" height="{h}" loading="lazy" decoding="async"><span>{E(t)}</span></a></li>'
 # ---- 详情页 ----
 def detail(lang,kind,it,rel):
   zh=lang=='zh';P='/en' if not zh else '';src=SRCS[kind];ck,slug,cz_,cen=catof(kind,it)
@@ -112,7 +112,7 @@ def detail(lang,kind,it,rel):
   kws=[cz_,cen]+([it['line'],it['lineEn']] if kind=='pose' else [])+([x[1] if x[0]=='item' else cz(x[1]) for x in ctags(it)] if kind in ('costume','anime') else [])+([it['sec'],it['st']] if kind=='portrait' else [])
   kws=[k for k in kws if k]
   creator={"@type":"Person","name":src[2],"url":src[3]}
-  io={"@type":"ImageObject","@id":url(lang,path)+'#image',"name":t,"description":desc,"contentUrl":f"{SITE}/{img}","thumbnailUrl":f"{SITE}/{th}","url":url(lang,path),"width":w,"height":h,
+  io={"@type":"ImageObject","@id":url(lang,path)+'#image',"name":t,"description":desc,"contentUrl":f"{SITE}/{img}","thumbnailUrl":f"{TS(th)}","url":url(lang,path),"width":w,"height":h,
       "encodingFormat":"image/webp","inLanguage":'en' if not zh else 'zh-CN',"keywords":', '.join(kws),"creator":creator,"creditText":f"{src[0]} ({src[2]})","acquireLicensePage":src[1],
       "isPartOf":{"@type":"WebSite","name":"衣姿 PoseWear","url":SITE+'/'},"dateModified":LM[kind]}
   if kind=='portrait': io.update({"license":CC0,"copyrightNotice":"CC0 1.0 (public domain dedication) by @agi_aibusi"})
@@ -187,7 +187,7 @@ def hub(lang,kind):
   cr=[(LAB[lang]['home'],P+'/'),(LAB[lang][kind],None)]
   first={s:L[0] for s,z,e,L in CATS[kind]} if kind!='tag' else {s:t['L'][0] for s,t in TAGS.items()}
   ki='costume' if kind=='tag' else kind
-  li=''.join(f'<li><a href="{P}/{kind}/{s}/"><img src="/{thumb(ki,first[s])}" alt="{E(z if zh else e)}" width="{TW[ki][0]}" height="{TW[ki][1]}" loading="lazy" decoding="async"><span>{E(z if zh else e)} · {n}</span></a></li>' for s,z,e,n in cs)
+  li=''.join(f'<li><a href="{P}/{kind}/{s}/"><img src="{TU(thumb(ki,first[s]))}" alt="{E(z if zh else e)}" width="{TW[ki][0]}" height="{TW[ki][1]}" loading="lazy" decoding="async"><span>{E(z if zh else e)} · {n}</span></a></li>' for s,z,e,n in cs)
   extra='' if kind!='costume' else f'<p><a href="{P}/tag/">{"按单品和颜色浏览 →" if zh else "Browse by garment and colour →"}</a></p>'
   body=f'<div class="wrap">{crumbs_html(cr)}<h1>{E(nm)}</h1><p class="lead">{E(desc)}</p><ul class="cg">{li}</ul>{extra}</div>'
   ld=[{"@type":"CollectionPage","url":url(lang,path),"name":nm,"description":desc,"inLanguage":'zh-CN' if zh else 'en'},crumbs_ld(lang,cr)]
@@ -229,7 +229,7 @@ HOME_COUNTS=[('288','pose'),('1439','ang'),('1407','cos'),('1320','ani'),('1499'
 for a,k in HOME_COUNTS:
   idx=idx.replace(f'<b data-n="{a}">0</b>',f'<b data-n="{HC[k]}" data-na="{HA[k]}">{HC[k]:,}</b>')
 def ssr(p):
-  t=p['zh'];a=p['angles'];return (f'<article class="card ssr"><div class="ph pose done"><a href="/pose/{p["id"]}/" class="ssl"><img class="ld" src="/{a[0]["t"]}" alt="{E(t)}" width="300" height="400" decoding="async"{"" if SP.index(p)<4 else " loading=\"lazy\""}></a><span class="badge">{p["no"]}</span></div>'
+  t=p['zh'];a=p['angles'];return (f'<article class="card ssr"><div class="ph pose done"><a href="/pose/{p["id"]}/" class="ssl"><img class="ld" src="{TU(a[0]["t"])}" alt="{E(t)}" width="300" height="400" decoding="async"{"" if SP.index(p)<4 else " loading=\"lazy\""}></a><span class="badge">{p["no"]}</span></div>'
     f'<div class="info"><h3><a href="/pose/{p["id"]}/">{E(t)}</a></h3><div class="sub">{E(p["cat"])} · {len(a)} 个角度</div><div class="tags"><span class="tag">{E(p["line"])}</span><span class="tag c">{E(p["cat"])}</span></div></div></article>')
 g=re.search(r'(<main id="grid"[^>]*>)(.*?)(</main>)',idx,re.S)
 idx=idx[:g.start(2)]+''.join(ssr(p) for p in SP[:12])+idx[g.end(2):]
