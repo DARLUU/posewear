@@ -14,6 +14,8 @@ button:hover,select:hover,.btn:hover{background:var(--sf2)}button:active{transfo
 .ghost{background:transparent;color:var(--tx2)}.ghost:hover{background:var(--sf);color:var(--tx)}
 .icon{width:40px;height:40px;padding:0;background:transparent;border-radius:50%}.icon:hover{background:var(--sf)}
 .icon svg,.fbtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.icon svg.gh{fill:currentColor;stroke:none}
+a.icon{display:inline-flex;align-items:center;justify-content:center;color:inherit;text-decoration:none}
 kbd{font:11px/1 ui-monospace,Menlo,monospace;background:var(--sf);border-radius:5px;padding:3px 6px;margin:0 2px;color:var(--tx2)}
 .skip{position:absolute;left:-999px;top:8px;z-index:200;background:var(--tx);color:var(--bg);padding:8px 14px}.skip:focus{left:12px}
 .sp{flex:1}.fine{font-size:12.5px;color:var(--mu);margin:8px 0 0}.fine.good{color:var(--ok)}.fine.bad{color:var(--bad);white-space:pre-line}
@@ -30,7 +32,6 @@ body.scrolled .top{box-shadow:0 1px 0 var(--line)}
 .tabs button{background:transparent;padding:10px 16px;font-size:15px;font-weight:600;color:var(--tx2);position:relative}
 .tabs button:hover{color:var(--tx);background:var(--sf)}.tabs button.on{background:var(--tx);color:var(--bg)}
 .tabs button i{font-style:normal;font-weight:400;font-size:12px;opacity:.55;margin-left:4px}
-.tabs button.st::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--ac);position:absolute;top:7px;right:7px}
 .ind{display:none}
 .top .search{position:relative;flex:1;max-width:none;min-width:0}
 .sic{position:absolute;left:18px;top:50%;width:18px;height:18px;transform:translateY(-50%);fill:none;stroke:var(--mu);stroke-width:2;stroke-linecap:round;pointer-events:none}
@@ -488,6 +489,11 @@ button:active:not(:disabled){transform:scale(.97)}.tabs button:active,.chip:acti
 .intro p{flex:1;margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:13.5px;color:var(--tx2);line-height:1.6;min-width:0}.intro p b{font-size:15px;color:var(--tx);font-weight:600}
 .intro .ix{width:32px;height:32px;padding:0;border-radius:50%;background:transparent;color:var(--mu);font-size:12px}.intro .ix:hover{background:var(--line);color:var(--tx)}
 .nointro .intro,body.studio .intro,body.compact .intro{display:none}
+.annbar{max-width:var(--w);margin:8px auto 4px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-sizing:border-box;background:var(--acs);border:1px solid var(--line2);border-radius:12px}
+.annbar p{flex:1;margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:13.5px;color:var(--tx2);line-height:1.6;min-width:0}.annbar p b{font-size:14.5px;color:var(--tx);font-weight:600;white-space:nowrap}
+.annbar .ix{width:32px;height:32px;padding:0;border-radius:50%;background:transparent;color:var(--mu);font-size:12px;flex:none}.annbar .ix:hover{background:var(--line);color:var(--tx)}
+.annbar .sm{flex:none}
+.noann .annbar,body.studio .annbar,body.depth .annbar,body.compact .annbar{display:none}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.16s!important;animation-timing-function:cubic-bezier(.2,.7,.2,1)}
 .grid{transition:opacity .16s}
 #toast{bottom:calc(32px + env(safe-area-inset-bottom))}#tray{bottom:calc(24px + env(safe-area-inset-bottom))}

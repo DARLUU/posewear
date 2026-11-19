@@ -31,7 +31,7 @@
 
 | | |
 |---|---|
-| **素材库** | 姿势（多角度线稿）、深度姿势（热链原站深度图）、服装（按季节和类型分类）、人像（脸模参考，CC0）。每张图都有中文描述；深度姿势另附日文原名 |
+| **素材库** | 姿势（多角度线稿）、深度姿势（热链原站深度图）、服装（按季节和类型分类）、动画服装（动画风穿搭）、人像（脸模参考，CC0）。每张图都有中文描述；深度姿势另附日文原名 |
 | **搜索与筛选** | 中英文关键词、分类、排序、随机一张；每个素材有独立详情页，方便分享 |
 | **试穿工作台** | 上传人物照，选服装和姿势，生成试穿图，或不用照片直接出图；一次可出多张，有前后对比、单张下载和打包下载 |
 | **多家服务商** | OpenAI、Gemini、豆包 Seedream、OpenAI 兼容的自定义中转，见下表 |
@@ -51,6 +51,19 @@
 | Gemini | Google AI Studio 的 API Key | gemini-2.5-flash-image | 即 Nano Banana |
 | 豆包 Seedream | 火山方舟 API Key | doubao-seedream-4-0-250828 | 国内直连，默认经本站代理以解决跨域 |
 | 自定义中转 | Base URL + Key + 模型名 | 自填 | OpenAI 兼容；可选 edits（multipart）或 generations（JSON） |
+
+## 更新日志
+
+### 2026-11-19 · 动画服装库上线
+
+- 新增「动画服装」栏目：接入上游 COSTUME-ANIME-DB（[@giaaibusi](https://x.com/giaaibusi)）的 **1320 套**动画风穿搭，与写实服装同为 8 个分类（春 197 / 夏 237 / 秋 230 / 冬 232 / 内衣 197 / 派对礼服 36 / 泳装 52 / 性感 139），每套附中英文提示词。
+- 内衣、性感类共 336 套按成人内容处理：默认隐藏，打开顶部「18+」开关后显示（默认公开 984 套）。
+- 动画服装支持服装库的全部功能：分类 / 颜色 / 单品筛选、搜索建议、收藏、最近浏览、组合提示词、中英双语详情页与 sitemap；试穿工作台的服装步骤可直接「从动画服装选」。
+- 首页新增上线公告条与动画服装计数，页脚与隐私说明补齐来源致谢；`scripts/fetch-assets.py` 新增 `anime` 数据源（顺带修复写实服装漏抓缩略图的问题）。
+
+### 2026-10-31 · 深度姿势
+
+- 新增「深度姿势」栏目：热链上游深度姿势图 288 组 / 1439 张，双人图走 18+ 开关。
 
 ## 截图
 
@@ -178,6 +191,7 @@ Key 只存在你浏览器的 localStorage 里，可在设置里清除。默认�
 - [AI Pose Gallery](https://ai-pose-gallery.pages.dev/)：姿势线稿
 - [AI Pose Depth Gallery](https://ai-pose-depth-gallery.pages.dev/)：深度姿势，作者 [ギア / @giaaibusi](https://x.com/giaaibusi)。页面热链原图，非官方汉化；图片不进本仓库
 - [AI Costume Gallery](https://ai-costume-gallery.pages.dev/)：服装图，作者 [@giaaibusi](https://x.com/giaaibusi)
+- [AI Costume Anime Gallery](https://ai-costume-anime-gallery.pages.dev/)：动画服装图，作者 [@giaaibusi](https://x.com/giaaibusi)
 - [AI Portrait Gallery](https://ai-portrait-gallery.pages.dev/)：人像，作者 [@agi_aibusi](https://x.com/agi_aibusi)，CC0
 - [wzc520pyfm/gen-ai-pose-image](https://github.com/wzc520pyfm/gen-ai-pose-image)、[paipiange/nvzhuang](https://github.com/paipiange/nvzhuang)：给了很多思路的同类项目
 
@@ -186,7 +200,7 @@ Key 只存在你浏览器的 localStorage 里，可在设置里清除。默认�
 | 内容 | 是否在本仓库 | 许可 |
 |---|---|---|
 | 代码、页面文案、构建脚本 | 是 | [MIT](LICENSE) |
-| 姿势、服装图片和原始数据 | 否，由 `fetch-assets.py` 从原站下载 | 归原作者 [@giaaibusi](https://x.com/giaaibusi) 所有（[AI Pose Gallery](https://ai-pose-gallery.pages.dev/) / [AI Costume Gallery](https://ai-costume-gallery.pages.dev/)），原站未标明开放许可 |
+| 姿势、服装图片和原始数据 | 否，由 `fetch-assets.py` 从原站下载 | 归原作者 [@giaaibusi](https://x.com/giaaibusi) 所有（[AI Pose Gallery](https://ai-pose-gallery.pages.dev/) / [AI Costume Gallery](https://ai-costume-gallery.pages.dev/) / [AI Costume Anime Gallery](https://ai-costume-anime-gallery.pages.dev/)），原站未标明开放许可 |
 | 人像图片 | 否，同上 | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/deed.zh-hans)，作者 [@agi_aibusi](https://x.com/agi_aibusi)（[AI Portrait Gallery](https://ai-portrait-gallery.pages.dev/)） |
 | 深度姿势图片 | 否，页面 `<img>` 热链 [AI Pose Depth Gallery](https://ai-pose-depth-gallery.pages.dev/) | 归作者 [ギア / @giaaibusi](https://x.com/giaaibusi)。本仓库只有文本元数据和译名 |
 | 深度姿势文本元数据 | 是，`depth/packs/` | 日文原文归原作者，中文译名为本站 |

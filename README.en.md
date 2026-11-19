@@ -23,7 +23,7 @@ Pose, outfit and portrait reference galleries with bilingual prompts, plus a bri
 
 ## Features
 
-- **Three galleries**: poses (multi-angle line sketches), outfits (by season and type), and portraits (face references, CC0). Every image has a Chinese description and an English prompt you can copy.
+- **Five galleries**: poses (multi-angle line sketches), depth poses (hotlinked depth maps), outfits (by season and type), anime outfits (anime-style looks), and portraits (face references, CC0). Every image has a Chinese description and an English prompt you can copy.
 - **Search and filters**: search in Chinese or English, filter by category, sort, or pick a random image. Each item has its own static page for sharing.
 - **Try-on studio**: upload a photo, pick an outfit and a pose, then generate. You can also generate without a photo. It supports several outputs per run, a before/after slider, and single or zip download.
 - **Generation history**: stored locally in IndexedDB. You can view, delete or clear items, and undo.
@@ -39,6 +39,19 @@ Pose, outfit and portrait reference galleries with bilingual prompts, plus a bri
 | Gemini | Google AI Studio key | gemini-2.5-flash-image | a.k.a. Nano Banana |
 | Doubao Seedream | Volcengine Ark key | doubao-seedream-4-0-250828 | routed through the site proxy by default for CORS |
 | Custom relay | Base URL, key and model | any | OpenAI-compatible; choose edits (multipart) or generations (JSON) |
+
+## Changelog
+
+### 2026-11-19 · Anime outfits library
+
+- New **Anime outfits** tab: 1,320 anime-style outfits from COSTUME-ANIME-DB by [@giaaibusi](https://x.com/giaaibusi), in the same 8 categories as the outfit library (spring 197 / summer 237 / autumn 230 / winter 232 / lingerie 197 / party 36 / swimwear 52 / sexy 139), each with Chinese and English prompts.
+- Lingerie and sexy categories (336 items) are treated as adult content: hidden by default behind the 18+ toggle (984 public items).
+- Anime outfits support the full outfit feature set: category / colour / item filters, search suggestions, favourites, recent views, prompt combos, bilingual detail pages and sitemap; the try-on studio can pick anime outfits directly from the garment step.
+- Homepage announcement bar and anime counts added; `scripts/fetch-assets.py` gains an `anime` source (and now also fetches the outfit thumbnails it used to miss).
+
+### 2026-10-31 · Depth poses
+
+- New **Depth poses** tab: 288 sets / 1,439 hotlinked depth-pose images; two-person images sit behind the 18+ toggle.
 
 ## Screenshots
 
@@ -96,14 +109,14 @@ Issues and PRs are welcome. Run `python3 build.py` and both test files before yo
 
 ## Acknowledgements
 
-[AI Pose Gallery](https://ai-pose-gallery.pages.dev/) · [AI Costume Gallery](https://ai-costume-gallery.pages.dev/) by [@giaaibusi](https://x.com/giaaibusi) · [AI Pose Depth Gallery](https://ai-pose-depth-gallery.pages.dev/) by [ギア / @giaaibusi](https://x.com/giaaibusi) (hotlinked, unofficial Chinese index; images are not in this repo) · [AI Portrait Gallery](https://ai-portrait-gallery.pages.dev/) by [@agi_aibusi](https://x.com/agi_aibusi) (CC0) · [wzc520pyfm/gen-ai-pose-image](https://github.com/wzc520pyfm/gen-ai-pose-image) · [paipiange/nvzhuang](https://github.com/paipiange/nvzhuang)
+[AI Pose Gallery](https://ai-pose-gallery.pages.dev/) · [AI Costume Gallery](https://ai-costume-gallery.pages.dev/) · [AI Costume Anime Gallery](https://ai-costume-anime-gallery.pages.dev/) by [@giaaibusi](https://x.com/giaaibusi) · [AI Pose Depth Gallery](https://ai-pose-depth-gallery.pages.dev/) by [ギア / @giaaibusi](https://x.com/giaaibusi) (hotlinked, unofficial Chinese index; images are not in this repo) · [AI Portrait Gallery](https://ai-portrait-gallery.pages.dev/) by [@agi_aibusi](https://x.com/agi_aibusi) (CC0) · [wzc520pyfm/gen-ai-pose-image](https://github.com/wzc520pyfm/gen-ai-pose-image) · [paipiange/nvzhuang](https://github.com/paipiange/nvzhuang)
 
 ## License and asset boundaries
 
 | What | In this repo? | License |
 |---|---|---|
 | Code, UI copy, build scripts | Yes | [MIT](LICENSE) |
-| Pose and outfit images and data | No — downloaded by `fetch-assets.py` | Owned by [@giaaibusi](https://x.com/giaaibusi) ([AI Pose Gallery](https://ai-pose-gallery.pages.dev/) / [AI Costume Gallery](https://ai-costume-gallery.pages.dev/)); no open license is stated |
+| Pose and outfit images and data | No — downloaded by `fetch-assets.py` | Owned by [@giaaibusi](https://x.com/giaaibusi) ([AI Pose Gallery](https://ai-pose-gallery.pages.dev/) / [AI Costume Gallery](https://ai-costume-gallery.pages.dev/) / [AI Costume Anime Gallery](https://ai-costume-anime-gallery.pages.dev/)); no open license is stated |
 | Portrait images | No — same as above | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) by [@agi_aibusi](https://x.com/agi_aibusi) ([AI Portrait Gallery](https://ai-portrait-gallery.pages.dev/)) |
 | Depth-pose images | No — hotlinked with `<img>` from [AI Pose Depth Gallery](https://ai-pose-depth-gallery.pages.dev/) | Owned by [ギア / @giaaibusi](https://x.com/giaaibusi). This repo only has the text metadata and Chinese names |
 | Depth-pose text metadata | Yes, `depth/packs/` | Japanese text belongs to the original author; Chinese names are ours |

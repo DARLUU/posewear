@@ -2,7 +2,7 @@
 import datetime,time
 TODAY=datetime.date.today().isoformat()
 MT=lambda p:datetime.date.fromtimestamp(os.path.getmtime(p)).isoformat()
-LM={'pose':MT(f'{R}/pose/data.json'),'costume':MT(f'{R}/costume/data.json'),'portrait':MT(f'{R}/portrait/data.json')}
+LM={'pose':MT(f'{R}/pose/data.json'),'costume':MT(f'{R}/costume/data.json'),'anime':MT(f'{R}/anime/data.json'),'portrait':MT(f'{R}/portrait/data.json')}
 for d in ['en','tag']:
   if os.path.exists(f'{D}/{d}'): shutil.rmtree(f'{D}/{d}')
 if not os.path.exists('indexnow.key'):
@@ -10,6 +10,7 @@ if not os.path.exists('indexnow.key'):
 INK=open('indexnow.key').read().strip();open(f'{D}/{INK}.txt','w').write(INK)
 SRCS={'pose':('AI Pose Gallery','https://ai-pose-gallery.pages.dev','@giaaibusi','https://x.com/giaaibusi'),
  'costume':('AI Costume Gallery','https://ai-costume-gallery.pages.dev','@giaaibusi','https://x.com/giaaibusi'),
+ 'anime':('AI Costume Anime Gallery','https://ai-costume-anime-gallery.pages.dev','@giaaibusi','https://x.com/giaaibusi'),
  'portrait':('AI Portrait Gallery','https://ai-portrait-gallery.pages.dev','@agi_aibusi','https://x.com/agi_aibusi')}
 CC0='https://creativecommons.org/publicdomain/zero/1.0/'
 # ---- 分类定义 ----
@@ -20,7 +21,7 @@ RLEN={'短发':('short-hair','Short hair'),'中长发':('medium-hair','Medium ha
 COLS={'黑':'black','白':'white','红':'red','粉':'pink','蓝':'blue','藏青':'navy','棕':'brown','米':'beige','象牙白':'ivory','灰':'grey','绿':'green','黄':'yellow','紫':'purple','金':'gold','银':'silver','卡其':'khaki','酒红':'burgundy','橙':'orange','奶油':'cream','薄荷':'mint','薰衣草':'lavender','橄榄':'olive'}
 ITEMK={'连衣裙':'dress','半身裙':'skirt','短裤':'shorts','长裤':'trousers','牛仔裤':'jeans','大衣':'coat','夹克':'jacket','开衫':'cardigan','衬衫':'blouse','毛衣':'sweater','吊带':'camisole','泳衣':'swimsuit','靴子':'boots','高跟鞋':'high heels','运动鞋':'sneakers','凉鞋':'sandals','连裤袜':'tights','长筒袜':'stockings'}
 cz=lambda k:k if k.endswith('白') else k+'色'
-NA=sum(len(p['angles']) for p in poses.values());SP=[p for p in PL if not p.get('a')];NA_PUB=sum(len(p['angles']) for p in SP);SC=[c for c in cos if not c.get('a')];SR=pors
+NA=sum(len(p['angles']) for p in poses.values());SP=[p for p in PL if not p.get('a')];NA_PUB=sum(len(p['angles']) for p in SP);SC=[c for c in cos if not c.get('a')];SA=[c for c in acs if not c.get('a')];SR=pors
 def ctags(c):
   w=' '+c['kw']+' ';e=' '+c['en'].replace(',',' ')+' '
   return [('item',z,ITEMK[z]) for z in ITEMK if ' '+ITEMK[z]+' ' in e]+[('col',z,COLS[z]) for z in COLS if ' '+COLS[z]+' ' in w]
@@ -31,19 +32,20 @@ TAGS={s:t for s,t in TAGS.items() if len(t['L'])>=4}
 cap=lambda s:s[:1].upper()+s[1:]
 def en_title(kind,it):
   if kind=='pose': return cap(it['en'])
-  if kind=='costume':
+  if kind in ('costume','anime'):
     ps=[x.strip() for x in it['en'].split(',')][1:3];return cap(' + '.join(ps)) if ps else cap(it['en'])
   return cap(it['en'].split(',')[1].strip())+' portrait'
 def zh_title(kind,it): return it['zh'] if kind=='pose' else it['ti']
 def thumb(kind,it): return it['angles'][0]['t'] if kind=='pose' else it['t']
 def big(kind,it): return it['angles'][0]['i'] if kind=='pose' else it['m']
-TW={'pose':(300,400),'costume':(360,540),'portrait':(400,500)}
+TW={'pose':(300,400),'costume':(360,540),'anime':(360,540),'portrait':(400,500)}
 def catof(kind,it):
   if kind=='pose': return ('pose',PCAT[it['cat']][0],it['cat'],PCAT[it['cat']][1])
   if kind=='costume': return ('costume',CCAT[it['cat']][0],it['cat'],CCAT[it['cat']][1])
+  if kind=='anime': return ('anime',CCAT[it['cat']][0],it['cat'],CCAT[it['cat']][1])
   return ('portrait',RLEN[it['len']][0],it['len'],RLEN[it['len']][1])
-HAS_EN={'pose','costume'}  # 人像详情页数量太大，英文版只做分类页（Pages 文件数上限）
-LAB={'zh':{'pose':'姿势','costume':'服装','portrait':'人像','tag':'标签','home':'首页'},'en':{'pose':'Poses','costume':'Outfits','portrait':'Portraits','tag':'Tags','home':'Home'}}
+HAS_EN={'pose','costume','anime'}  # 人像详情页数量太大，英文版只做分类页（Pages 文件数上限）
+LAB={'zh':{'pose':'姿势','costume':'服装','anime':'动画服装','portrait':'人像','tag':'标签','home':'首页'},'en':{'pose':'Poses','costume':'Outfits','anime':'Anime outfits','portrait':'Portraits','tag':'Tags','home':'Home'}}
 CSS2=CSS+'''
 .bc ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px}.bc li+li:before{content:"›";margin-right:4px;color:#aaa}.bc a{text-decoration:none}.bc a:hover{text-decoration:underline}
 .tg{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.tg a{font-size:13px;background:#f5f5f5;border-radius:999px;padding:4px 12px;text-decoration:none}.tg a:hover{background:#ececec}
@@ -61,7 +63,7 @@ def crumbs_ld(lang,cr,bid=None): return {"@type":"BreadcrumbList",**({"@id":bid}
 def crumbs_html(cr): return '<nav class="bc" aria-label="breadcrumb"><ol>'+''.join(f'<li>{"<a href=\""+u+"\">"+E(n)+"</a>" if u else "<span aria-current=\"page\">"+E(n)+"</span>"}</li>' for n,u in cr)+'</ol></nav>'
 def shell(lang,path,title,desc,body,ld,en=True,og=None,ogt='website'):
   P='/en' if lang=='en' else ''
-  nav=(f'<nav><a href="{P}/pose/">{LAB[lang]["pose"]}</a><a href="{P}/costume/">{LAB[lang]["costume"]}</a><a href="{P}/portrait/">{LAB[lang]["portrait"]}</a>'+
+  nav=(f'<nav><a href="{P}/pose/">{LAB[lang]["pose"]}</a><a href="{P}/costume/">{LAB[lang]["costume"]}</a><a href="{P}/anime/">{LAB[lang]["anime"]}</a><a href="{P}/portrait/">{LAB[lang]["portrait"]}</a><a href="https://github.com/atuizz/posewear" target="_blank" rel="noopener">GitHub</a>'+
     (f'<a href="/en{path}" hreflang="en" lang="en">EN</a>' if lang=='zh' and en else f'<a href="{path}" hreflang="zh-CN" lang="zh-CN">中文</a>' if lang=='en' else '')+'</nav>')
   foot=('Images from AI Pose Gallery / AI Costume Gallery (by @giaaibusi) and AI Portrait Gallery (by @agi_aibusi, CC0 1.0). All AI-generated. <a href="/en/">PoseWear home</a>' if lang=='en' else
     '图片来自 AI Pose Gallery / AI Costume Gallery（原作者 @giaaibusi）与 AI Portrait Gallery（@agi_aibusi，CC0 1.0），均为 AI 生成图，中文描述由本站整理。<a href="/">返回首页</a>')
@@ -75,7 +77,7 @@ def shell(lang,path,title,desc,body,ld,en=True,og=None,ogt='website'):
 <footer>{foot}</footer></body></html>'''
 def W(path,html):
   os.makedirs(f'{D}{path}',exist_ok=True);open(f'{D}{path}index.html','w').write(html)
-SM={'pose':[],'costume':[],'portrait':[],'pages':[]}
+SM={'pose':[],'costume':[],'anime':[],'portrait':[],'pages':[]}
 def add(sm,path,lm,imgs=(),en=True):
   SM[sm].append((url('zh',path),lm,imgs))
   if en: SM[sm].append((url('en',path),lm,imgs))
@@ -97,7 +99,7 @@ def detail(lang,kind,it,rel):
     desc=(f"{it['zh']}：{it['line']} · {it['cat']}姿势参考，{len(angs)} 个拍摄角度（{'、'.join(a['zh'] for a in angs)}），附中英文提示词。" if zh else
       f"{te} — {it['lineEn']} pose reference ({cen.lower()}), {len(angs)} camera angles ({', '.join(a['en'] for a in angs)}), with an English prompt.")
     ttl=f"{tz} · {it['cat']}姿势参考 | 衣姿 PoseWear" if zh else f"{te} – {cen} Pose Reference | PoseWear"
-  elif kind=='costume':
+  elif kind in ('costume','anime'):
     prz=it['zh'];pre=it['en'];pzh=f"{it['cat']}穿搭，"+it['zh'].rstrip('。').replace('。','，')
     desc=(f"{it['ti']}：{it['cat']}穿搭参考图。{it['zh']}附英文提示词，可在线 AI 试穿。" if zh else f"{te} – {cen.lower()} outfit reference image with an AI prompt: {it['en']}. Try it on online.")
     ttl=f"{tz} · {it['cat']}穿搭参考 | 衣姿 PoseWear" if zh else f"{te} – {cen} Outfit Reference | PoseWear"
@@ -107,7 +109,7 @@ def detail(lang,kind,it,rel):
     ttl=f"{tz} · 人像脸模参考 {it['no']} | 衣姿 PoseWear"
   path=f'/{kind}/{it["id"]}/'
   cr=[(LAB[lang]['home'],P+'/'),(LAB[lang][kind],f'{P}/{kind}/'),(cz_ if zh else cen,f'{P}/{kind}/{slug}/'),(t,None)]
-  kws=[cz_,cen]+([it['line'],it['lineEn']] if kind=='pose' else [])+([x[1] if x[0]=='item' else cz(x[1]) for x in ctags(it)] if kind=='costume' else [])+([it['sec'],it['st']] if kind=='portrait' else [])
+  kws=[cz_,cen]+([it['line'],it['lineEn']] if kind=='pose' else [])+([x[1] if x[0]=='item' else cz(x[1]) for x in ctags(it)] if kind in ('costume','anime') else [])+([it['sec'],it['st']] if kind=='portrait' else [])
   kws=[k for k in kws if k]
   creator={"@type":"Person","name":src[2],"url":src[3]}
   io={"@type":"ImageObject","@id":url(lang,path)+'#image',"name":t,"description":desc,"contentUrl":f"{SITE}/{img}","thumbnailUrl":f"{SITE}/{th}","url":url(lang,path),"width":w,"height":h,
@@ -115,7 +117,7 @@ def detail(lang,kind,it,rel):
       "isPartOf":{"@type":"WebSite","name":"衣姿 PoseWear","url":SITE+'/'},"dateModified":LM[kind]}
   if kind=='portrait': io.update({"license":CC0,"copyrightNotice":"CC0 1.0 (public domain dedication) by @agi_aibusi"})
   tags=[]
-  if kind=='costume': tags=[(x[1] if x[0]=='item' else cz(x[1]),x[2]) for x in ctags(it) if x[2].replace(' ','-') in TAGS]
+  if kind in ('costume','anime'): tags=[(x[1] if x[0]=='item' else cz(x[1]),x[2]) for x in ctags(it) if x[2].replace(' ','-') in TAGS]
   tg='<div class="tg">'+f'<a href="{P}/{kind}/{slug}/">{E(cz_ if zh else cen)}</a>'+''.join(f'<a href="{P}/tag/{en.replace(" ","-")}/">{E(z if zh else en)}</a>' for z,en in tags)+(f'<a href="/portrait/{RSEC[it["sec"]][0]}/">{E(it["sec"])}</a>' if kind=='portrait' else '')+'</div>'
   if kind=='pose':
     ang=('<div class="box"><small>'+('拍摄角度' if zh else 'Camera angles')+'</small><ul>'+''.join(f'<li><a href="/{a["i"]}">{E(a["zh"] if zh else a["en"])}</a> · <code>{E(a["en"])}</code></li>' for a in angs)+'</ul></div>')
@@ -130,10 +132,10 @@ def detail(lang,kind,it,rel):
 <div>{crumbs_html(cr)}<h1>{E(t)}</h1><div class="mu">{E((it['line']+' · '+it['cat'] if zh else it['lineEn']+' · '+cen) if kind=='pose' else (cz_ if zh else cen))} · {'编号' if zh else 'No.'} {E(it.get('no') or it['id'])}</div>{tg}
 {boxes}{ang}
 <a class="go" href="/#{kind}/{it['id']}">{'在衣姿中打开' if zh else 'Open in PoseWear'}</a><a class="go" style="background:#111" href="/#studio">{'去试穿' if zh else 'Try on'}</a>{lic}</div>
-<section class="rel"><h2>{('同类'+('姿势' if kind=='pose' else '穿搭' if kind=='costume' else '人像')) if zh else 'More like this'}</h2><ul>{rl}</ul></section></main>'''
+<section class="rel"><h2>{('同类'+('姿势' if kind=='pose' else '穿搭' if kind in ('costume','anime') else '人像')) if zh else 'More like this'}</h2><ul>{rl}</ul></section></main>'''
   BID=url(lang,path)+'#breadcrumb';ld=[io,crumbs_ld(lang,cr,BID),{"@type":"WebPage","@id":url(lang,path),"url":url(lang,path),"name":ttl,"inLanguage":'zh-CN' if zh else 'en',"primaryImageOfPage":{"@id":url(lang,path)+'#image'},"breadcrumb":{"@id":BID}}]
   return shell(lang,path,ttl,desc,body,ld,en=kind in HAS_EN,og=img,ogt='article')
-for kind,L in [('pose',SP),('costume',SC),('portrait',SR)]:
+for kind,L in [('pose',SP),('costume',SC),('anime',SA),('portrait',SR)]:
   ck=lambda x:catof(kind,x)[1]
   for i,it in enumerate(L):
     same=[x for x in L if ck(x)==ck(it) and x['id']!=it['id']];pos=sum(1 for x in L[:i] if ck(x)==ck(it));rel=(same[pos:]+same[:pos])[:8]
@@ -145,6 +147,7 @@ for kind,L in [('pose',SP),('costume',SC),('portrait',SR)]:
 PER=96
 INTRO={'pose':('{c}姿势参考图，共 {n} 个姿势，每个都有正面、俯拍、仰拍等多个角度，附中英文提示词，画画、拍照和 AI 出图都能用。','{c} pose references: {n} poses, each shot from several camera angles, with English prompts for drawing, photography and AI image generation.'),
  'costume':('{c}穿搭参考图，共 {n} 套，每套都有中文描述和英文提示词，可以在衣姿里上传照片在线试穿。','{c} outfit references: {n} looks, each with a description and an English prompt. Upload a photo to try them on in PoseWear.'),
+ 'anime':('{c}动画风穿搭参考图，共 {n} 套，每套都有中文描述和英文提示词，可以在衣姿里上传照片在线试穿。','{c} anime-style outfit references: {n} looks, each with a description and an English prompt. Upload a photo to try them on in PoseWear.'),
  'portrait':('{c}人像脸模参考，共 {n} 张，AI 生成的虚构人物，CC0 1.0，可作 AI 绘图和视频的人物面部参考。','{c} face references: {n} AI-generated fictional people, CC0 1.0, for consistent characters in AI images and video.'),
  'tag':('带「{c}」的穿搭参考图，共 {n} 套，附中英文提示词。','Outfit references with {c}: {n} looks with English prompts.')}
 def listing(lang,kind,base,slug,cz_,cen,L,kindi=None,en=True,sm='pages'):
@@ -153,7 +156,7 @@ def listing(lang,kind,base,slug,cz_,cen,L,kindi=None,en=True,sm='pages'):
   for pg in range(1,pages+1):
     path=f'{base}{slug}/'+(f'{pg}/' if pg>1 else '')
     cr=[(LAB[lang]['home'],P+'/'),(LAB[lang][kind],f'{P}{base}'),(c,None if pg==1 else f'{P}{base}{slug}/')]+([(f'第 {pg} 页' if zh else f'Page {pg}',None)] if pg>1 else [])
-    ttl=(f"{c}{'' if kind=='tag' else {'pose':'姿势','costume':'穿搭','portrait':'人像'}[kind]}参考图{'' if pg==1 else f'（第 {pg} 页）'} | 衣姿 PoseWear" if zh else f"{c} {'Outfit' if kind in('costume','tag') else {'pose':'Pose','portrait':'Portrait'}[kind]} References{'' if pg==1 else f' – Page {pg}'} | PoseWear")
+    ttl=(f"{c}{'' if kind=='tag' else {'pose':'姿势','costume':'穿搭','anime':'动画穿搭','portrait':'人像'}[kind]}参考图{'' if pg==1 else f'（第 {pg} 页）'} | 衣姿 PoseWear" if zh else f"{c} {'Outfit' if kind in('costume','tag','anime') else {'pose':'Pose','portrait':'Portrait'}[kind]} References{'' if pg==1 else f' – Page {pg}'} | PoseWear")
     desc=INTRO[kind][0 if zh else 1].format(c=c,n=n)
     items=L[(pg-1)*PER:pg*PER]
     pgn=''
@@ -165,18 +168,20 @@ def listing(lang,kind,base,slug,cz_,cen,L,kindi=None,en=True,sm='pages'):
     if lang=='zh': add(sm,path,LM[kindi],en=en)
 CATS={'pose':[(PCAT[k][0],k,PCAT[k][1],[p for p in SP if p['cat']==k]) for k in PCAT],
  'costume':[(CCAT[k][0],k,CCAT[k][1],[c for c in SC if c['cat']==k]) for k in CCAT],
+ 'anime':[(CCAT[k][0],k,CCAT[k][1],[c for c in SA if c['cat']==k]) for k in CCAT],
  'portrait':[(RSEC[k][0],k,RSEC[k][1],[r for r in SR if r['sec']==k]) for k in RSEC]+[(RLEN[k][0],k,RLEN[k][1],[r for r in SR if r['len']==k]) for k in RLEN]}
 for lang in ['zh','en']:
   for kind,cs in CATS.items():
     for slug,z,e,L in cs: listing(lang,kind,f'/{kind}/',slug,z,e,L)
   for slug,t in TAGS.items(): listing(lang,'tag','/tag/',slug,t['zh'],t['en'],t['L'],kindi='costume')
-NAMES={'pose':('姿势参考图库','Pose Reference Library'),'costume':('服装穿搭参考图库','Outfit Reference Library'),'portrait':('人像脸模参考图库','Portrait Face References'),'tag':('穿搭标签','Outfit Tags')}
-CNT={'pose':len(SP),'costume':len(SC),'portrait':len(SR),'tag':len(TAGS)}
+NAMES={'pose':('姿势参考图库','Pose Reference Library'),'costume':('服装穿搭参考图库','Outfit Reference Library'),'anime':('动画服装参考图库','Anime Outfit Reference Library'),'portrait':('人像脸模参考图库','Portrait Face References'),'tag':('穿搭标签','Outfit Tags')}
+CNT={'pose':len(SP),'costume':len(SC),'anime':len(SA),'portrait':len(SR),'tag':len(TAGS)}
 def hub(lang,kind):
   zh=lang=='zh';P='/en' if not zh else '';path=f'/{kind}/';nm=NAMES[kind][0 if zh else 1]
   cs=[(s,z,e,len(L)) for s,z,e,L in CATS[kind]] if kind!='tag' else [(s,t['zh'],t['en'],len(t['L'])) for s,t in sorted(TAGS.items(),key=lambda x:-len(x[1]['L']))]
   desc={'pose':('按分类浏览 {n} 个姿势参考，每个姿势都有多个拍摄角度和中英文提示词。','Browse {n} pose references by category, each with several camera angles and prompts.'),
    'costume':('按季节和场合浏览 {n} 套服装穿搭参考，附中英文提示词，可在线 AI 试穿。','Browse {n} outfit references by season and occasion, with prompts and online AI try-on.'),
+   'anime':('按季节和场合浏览 {n} 套动画风服装穿搭参考，附中英文提示词，可在线 AI 试穿。','Browse {n} anime-style outfit references by season and occasion, with prompts and online AI try-on.'),
    'portrait':('按类型和发长浏览 {n} 张人像脸模参考，CC0 1.0。','Browse {n} CC0 portrait face references by type and hair length.'),
    'tag':('按单品和颜色浏览穿搭参考，共 {n} 个标签。','Browse outfits by garment and colour: {n} tags.')}[kind][0 if zh else 1].format(n=CNT[kind])
   cr=[(LAB[lang]['home'],P+'/'),(LAB[lang][kind],None)]
@@ -193,20 +198,20 @@ for lang in ['zh','en']:
 # ---- 英文首页 ----
 def featured(lang,n=12):return ''.join(cardli(lang,'costume',c) for c in SC[:n])
 catlinks=lambda lang:''.join(f'<li><a href="{"/en" if lang=="en" else ""}/{k}/{s}/">{E(z if lang=="zh" else e)}</a></li>' for k in ['pose','costume'] for s,z,e,L in CATS[k])
-en_desc=f"PoseWear: {len(SP)} pose sets ({NA_PUB} angle images), {len(SC):,} outfits and {len(SR):,} CC0 portraits, all with English and Chinese prompts — plus online AI try-on."
+en_desc=f"PoseWear: {len(SP)} pose sets ({NA_PUB} angle images), {len(SC):,} outfits, {len(SA):,} anime outfits and {len(SR):,} CC0 portraits, all with English and Chinese prompts — plus online AI try-on."
 ENLD=[{"@type":"WebSite","@id":SITE+'/en/#website',"url":SITE+'/en/',"name":"PoseWear","alternateName":"衣姿 PoseWear","inLanguage":"en","description":en_desc,"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":SITE+'/?t=costume&q={search_term_string}'},"query-input":"required name=search_term_string"}},
  {"@type":"WebApplication","name":"PoseWear","url":SITE+'/en/',"applicationCategory":"DesignApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":["zh-CN","en"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":en_desc}]
 body=f'''<div class="wrap"><h1>Pose, outfit and portrait references with prompts</h1><p class="lead">{E(en_desc)} Favourite and combine references, copy prompts for Stable Diffusion or Midjourney, or upload your own photo to try an outfit on.</p>
 <p><a class="go" href="/#costume">Open the gallery</a><a class="go" style="background:#111" href="/#studio">Try on online</a></p>
-<section class="sec"><h2>Browse by category</h2><ul class="tg">{catlinks("en")}<li><a href="/en/portrait/">Portraits</a></li><li><a href="/en/tag/">Outfit tags</a></li></ul></section>
+<section class="sec"><h2>Browse by category</h2><ul class="tg">{catlinks("en")}<li><a href="/en/portrait/">Portraits</a></li><li><a href="/en/anime/">Anime outfits</a></li><li><a href="/en/tag/">Outfit tags</a></li></ul></section>
 <section class="sec"><h2>Outfits</h2><ul class="cg">{featured("en")}</ul></section>
 <section class="sec"><h2>Poses</h2><ul class="cg">{"".join(cardli("en","pose",p) for p in SP[:12])}</ul></section>
 <section class="sec"><h2>About the images</h2><p class="lead">The code is open source (MIT, <a href="https://github.com/atuizz/posewear">GitHub</a>). Pose and outfit images come from AI Pose Gallery / AI Costume Gallery by <a href="https://x.com/giaaibusi">@giaaibusi</a> — no license is stated, so ask the author before reuse. Portraits come from AI Portrait Gallery by <a href="https://x.com/agi_aibusi">@agi_aibusi</a> under <a href="{CC0}" rel="license">CC0 1.0</a>. The app interface is in Chinese, with prompts available in English.</p></section></div>'''
 W('/en/',shell('en','/','PoseWear – Pose & Outfit Reference Library with AI Prompts and Online Try-On',en_desc,body,ENLD))
 add('pages','/',TODAY)
 # ---- 中文首页：标题、描述、真实数字、前 N 项静态卡片、JSON-LD、hreflang ----
-HC=dict(pose=len(SP),ang=NA_PUB,cos=len(SC),por=len(SR));HA=dict(pose=len(poses),ang=NA,cos=len(cos),por=len(pors))  # 首页计数唯一来源；改公开数：HC=dict(pose=len(SP),ang=NA_PUB,cos=len(SC),por=len(SR))
-zh_desc=f"衣姿 PoseWear：{HC['pose']} 组姿势（{HC['ang']:,} 张角度图）、{HC['cos']:,} 套服装、{HC['por']:,} 张人像参考图，附中英文提示词，可上传照片在线 AI 试穿。免费，无需注册。"
+HC=dict(pose=len(SP),ang=NA_PUB,cos=len(SC),ani=len(SA),por=len(SR));HA=dict(pose=len(poses),ang=NA,cos=len(cos),ani=len(acs),por=len(pors))  # 首页计数唯一来源；改公开数：HC=dict(pose=len(SP),ang=NA_PUB,cos=len(SC),por=len(SR))
+zh_desc=f"衣姿 PoseWear：{HC['pose']} 组姿势（{HC['ang']:,} 张角度图）、{HC['cos']:,} 套服装、{HC['ani']:,} 套动画服装、{HC['por']:,} 张人像参考图，附中英文提示词，可上传照片在线 AI 试穿。免费，无需注册。"
 zhttl='衣姿 PoseWear · 姿势、服装、人像参考图库 | 中英文提示词 + 在线 AI 试穿'
 idx=open(f'{D}/index.html').read()
 idx=re.sub(r'<title>.*?</title>',f'<title>{zhttl}</title>',idx,1)
@@ -220,7 +225,7 @@ LD=[{"@type":"WebSite","@id":SITE+'/#website',"url":SITE+'/',"name":"衣姿 Pose
  {"@type":"WebApplication","name":"衣姿 PoseWear","url":SITE+'/',"applicationCategory":"DesignApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":["zh-CN","en"],
   "offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},"description":zh_desc,"image":SITE+'/og.png',"isAccessibleForFree":True,"featureList":["姿势参考图（多角度）","服装穿搭参考图","人像脸模参考（CC0）","中英文提示词","在线 AI 试穿"]}]
 idx=idx.replace('</head>',f'<script type="application/ld+json">{json.dumps({"@context":"https://schema.org","@graph":LD},ensure_ascii=False,separators=(",",":"))}</script></head>',1)
-HOME_COUNTS=[('288','pose'),('1439','ang'),('1407','cos'),('1499','por')]
+HOME_COUNTS=[('288','pose'),('1439','ang'),('1407','cos'),('1320','ani'),('1499','por')]
 for a,k in HOME_COUNTS:
   idx=idx.replace(f'<b data-n="{a}">0</b>',f'<b data-n="{HC[k]}" data-na="{HA[k]}">{HC[k]:,}</b>')
 def ssr(p):
@@ -228,7 +233,7 @@ def ssr(p):
     f'<div class="info"><h3><a href="/pose/{p["id"]}/">{E(t)}</a></h3><div class="sub">{E(p["cat"])} · {len(a)} 个角度</div><div class="tags"><span class="tag">{E(p["line"])}</span><span class="tag c">{E(p["cat"])}</span></div></div></article>')
 g=re.search(r'(<main id="grid"[^>]*>)(.*?)(</main>)',idx,re.S)
 idx=idx[:g.start(2)]+''.join(ssr(p) for p in SP[:12])+idx[g.end(2):]
-nav='<nav class="seoc" aria-label="分类浏览"><div><h4>姿势分类</h4>'+''.join(f'<a href="/pose/{s}/">{z}</a>' for s,z,e,L in CATS['pose'])+'</div><div><h4>服装分类</h4>'+''.join(f'<a href="/costume/{s}/">{z}</a>' for s,z,e,L in CATS['costume'])+'<a href="/tag/">按单品和颜色</a></div><div><h4>人像</h4>'+''.join(f'<a href="/portrait/{s}/">{z}</a>' for s,z,e,L in CATS['portrait'])+'</div><div><h4>其他</h4><a href="/pose/">姿势图库</a><a href="/costume/">服装图库</a><a href="/portrait/">人像图库</a><a href="/en/" hreflang="en" lang="en">English</a></div></nav>'
+nav='<nav class="seoc" aria-label="分类浏览"><div><h4>姿势分类</h4>'+''.join(f'<a href="/pose/{s}/">{z}</a>' for s,z,e,L in CATS['pose'])+'</div><div><h4>服装分类</h4>'+''.join(f'<a href="/costume/{s}/">{z}</a>' for s,z,e,L in CATS['costume'])+'<a href="/tag/">按单品和颜色</a></div><div><h4>人像</h4>'+''.join(f'<a href="/portrait/{s}/">{z}</a>' for s,z,e,L in CATS['portrait'])+'</div><div><h4>其他</h4><a href="/pose/">姿势图库</a><a href="/costume/">服装图库</a><a href="/anime/">动画服装图库</a><a href="/portrait/">人像图库</a><a href="/en/" hreflang="en" lang="en">English</a></div></nav>'
 idx=idx.replace('<footer class="foot">',nav+'<footer class="foot">',1)
 open(f'{D}/index.html','w').write(idx)
 # ---- 站点地图 ----

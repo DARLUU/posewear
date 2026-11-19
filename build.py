@@ -11,13 +11,14 @@ ANG={'正面':('正面','front view'),'上から':('俯拍','high angle, from ab
 CC={'春':('春季','spring'),'夏':('夏季','summer'),'秋':('秋季','autumn'),'冬':('冬季','winter'),'ランジェリー':('内衣','lingerie'),'パーティ':('派对礼服','party'),'水着':('泳装','swimsuit'),'セクシー':('性感','sexy')}
 W=dict(l.split(':') for l in open('words.txt').read().split())
 TR={l.split('|')[0]:l.split('|')[1:] for l in open('tr_pose.txt').read().strip().split('\n')}
-pd=json.load(open(f'{R}/pose/data.json'))['D']; cd=json.load(open(f'{R}/costume/data.json'))['D']
+pd=json.load(open(f'{R}/pose/data.json'))['D']; cd=json.load(open(f'{R}/costume/data.json'))['D']; ad=json.load(open(f'{R}/anime/data.json'))['D']
 poses={}
 for d in pd:
   k=d['id'].rsplit('_',1)[0]; zh,en=TR[d['ポーズ名']]
   p=poses.setdefault(k,{'id':k,'no':d['ポーズ番号'],'line':LINE[d['系統']][0],'cat':CAT[d['分類']],'ja':d['ポーズ名'],'zh':zh,'en':en,'lineEn':LINE[d['系統']][1],'angles':[]})
   a=ANG[d['アングル']]; p['angles'].append({'zh':a[0],'en':a[1],'t':'p/t/'+d['id']+'.webp','i':'p/i/'+d['id']+'.webp','o':'o/p/'+d['id']+'.png','_src':d})
 cos=[{'id':d['id'],'cat':CC[d['カテゴリ']][0],'catEn':CC[d['カテゴリ']][1],'kw':d['キーワード'],**dict(zip(('zh','en','ti'),gen2(d['キーワード'],CC[d['カテゴリ']][1],d['id']))),'t':'c/t/'+os.path.basename(d['サムネ']),'m':'c/m/'+d['id']+'.webp','i':'c/i/'+os.path.basename(d['画像']),'o':'o/c/'+d['id']+'.png','_src':d} for d in cd]
+acs=[{'id':d['id'],'cat':CC[d['カテゴリ']][0],'catEn':CC[d['カテゴリ']][1],'kw':d['キーワード'],**dict(zip(('zh','en','ti'),gen2(d['キーワード'],CC[d['カテゴリ']][1],d['id']))),'t':'a/t/'+os.path.basename(d['サムネ']),'m':'a/m/'+d['id']+'.webp','i':'a/i/'+os.path.basename(d['画像']),'o':'o/a/'+d['id']+'.png','_src':d} for d in ad]
 # 双人 分类人工复核（看图）
 FIX={'pair60_P031':'坐位','pair60_P053':'立位贴身','pair60_P055':'侧位','pair60_P058':'贴脸'}
 for k,v in FIX.items(): poses[k]['cat']=v
@@ -26,6 +27,8 @@ for p in poses.values():
   if p['line'] in ADULT_LINES or p['cat'] in ADULT_CATS: p['a']=1
 for c in cos:
   if c['cat'] in ADULT_COS: c['a']=1
+for c in acs:
+  if c['cat'] in ADULT_COS: c['a']=1
 os.makedirs(D,exist_ok=True)
 for f in os.listdir('src'): shutil.copy('src/'+f,D)
 J=lambda o:json.dumps(o,ensure_ascii=False,separators=(',',':'))
@@ -33,9 +36,10 @@ SRC={}
 for p in poses.values():
   for a in p['angles']: SRC[a['i']]=a.pop('_src')
 for c in cos: SRC[c['id']]=c.pop('_src')
+for c in acs: SRC['anime:'+c['id']]=c.pop('_src')
 # 安全内容排在前面（默认落地页无露骨内容）
 PL=sorted(poses.values(),key=lambda p:p.get('a',0))
-PJ=J(PL);CJ=J(cos)
+PJ=J(PL);CJ=J(cos);AJ=J(acs)
 
 # ---------- 人像库（AI Portrait Gallery，CC0，@agi_aibusi）----------
 rt=open(f'{R}/portrait/images.js').read();rd=json.loads(rt[rt.index('['):rt.rindex(']')+1])
@@ -60,7 +64,7 @@ for d in rd:
   pors.append(it)
 RJ=J(pors)
 if os.path.exists(f'{D}/data.js'): os.remove(f'{D}/data.js')
-for a,b in [('costume/thumbs','c/t'),('costume/img','c/i')]:
+for a,b in [('costume/thumbs','c/t'),('costume/img','c/i'),('anime/thumbs','a/t'),('anime/img','a/i')]:
   shutil.copytree(f'{R}/{a}',f'{D}/{b}',dirs_exist_ok=True)
 os.makedirs(f'{D}/p/i',exist_ok=True)
 def cv(d):
@@ -79,6 +83,12 @@ def cm(d):
     im=Image.open(f"{R}/costume/{d['画像']}").convert('RGB'); im.thumbnail((1080,1620)); im.save(o,'WEBP',quality=80)
   o=f"{D}/o/c/{d['id']}.png"
   if not os.path.exists(o): os.link(f"{R}/costume/{d['原寸']}",o)
+def ca(d):
+  o=f"{D}/a/m/{d['id']}.webp"
+  if not os.path.exists(o):
+    im=Image.open(f"{R}/anime/{d['画像']}").convert('RGB'); im.thumbnail((1080,1620)); im.save(o,'WEBP',quality=80)
+  o=f"{D}/o/a/{d['id']}.png"
+  if not os.path.exists(o): os.link(f"{R}/anime/{d['原寸']}",o)
 def cr(d):
   t=f"{D}/r/t/{d['id']}.webp"
   if not os.path.exists(t): shutil.copy(f"{R}/portrait/{d['thumb']}",t)
@@ -87,14 +97,14 @@ def cr(d):
     im=Image.open(f"{R}/portrait/{d['full']}").convert('RGB'); im.thumbnail((1080,1350)); im.save(o,'WEBP',quality=80)
   o=f"{D}/o/r/{d['id']}.png"
   if not os.path.exists(o): os.link(f"{R}/portrait/{d['full']}",o)
-for x in ['p/t','c/m','o/p','o/c','r/t','r/m','o/r']: os.makedirs(f'{D}/{x}',exist_ok=True)
+for x in ['p/t','c/m','o/p','o/c','a/m','o/a','r/t','r/m','o/r']: os.makedirs(f'{D}/{x}',exist_ok=True)
 if os.path.exists(f'{D}/p/t'):
   for f in os.listdir(f'{D}/p/t'):
     if f.endswith('.jpg'): os.remove(f'{D}/p/t/{f}')
-with ProcessPoolExecutor() as ex: list(ex.map(cv,pd)); list(ex.map(cm,cd)); list(ex.map(cr,rd))
+with ProcessPoolExecutor() as ex: list(ex.map(cv,pd)); list(ex.map(cm,cd)); list(ex.map(ca,ad)); list(ex.map(cr,rd))
 # 深度姿势：只解析素材包里的文本，热链包不复制图片（见 depthpack.py）
 _dc=depthpack.catalog(); DJ=J(_dc['payload']); DEPTH_ORIGINS=_dc['origins']
 for src,rel in _dc['copies']:
   dest=f'{D}/{rel}'; os.makedirs(os.path.dirname(dest),exist_ok=True); shutil.copyfile(src,dest)
 exec(open('post.py').read())
-print(len(poses),len(cos),len(_dc['payload']['items']))
+print(len(poses),len(cos),len(acs),len(_dc['payload']['items']))
