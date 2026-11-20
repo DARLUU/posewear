@@ -5,6 +5,9 @@ from concurrent.futures import ProcessPoolExecutor
 from PIL import Image
 # 素材目录：默认 ./assets-raw，可用环境变量 POSEWEAR_RAW 指定（见 scripts/fetch-assets.py）
 R=os.environ.get('POSEWEAR_RAW','assets-raw'); D='dist'
+# 分离部署：设 POSEWEAR_ASSET_HOST 后，缩略图与原图输出到 dist-assets（独立 Pages 站），主站文件数压回免费版上限内；不设则单站构建，行为不变
+AHOST=os.environ.get('POSEWEAR_ASSET_HOST','').rstrip('/'); AD='dist-assets'; AROOT=AD if AHOST else D
+if AHOST: os.makedirs(AD,exist_ok=True)
 LINE={'全身1人・セクシー系':('全身·性感','full body, solo, sexy'),'全身1人・標準系':('全身·标准','full body, solo'),'上半身1人':('上半身','upper body, solo'),'2人絡み':('双人互动','two people, couple')}
 CAT={'寝そべり':'躺卧','セクシー・露骨寄り系':'性感·大胆','立ち':'站姿','座り':'坐姿','かわいい系':'可爱','胸寄せ・谷間強調系':'挤胸·乳沟','膝立ち・四つん這い':'跪立·趴姿','特殊':'特殊','正常位':'正面位','膝立ち':'跪立','横座り・女の子座り':'侧坐·鸭子坐','後背位':'后入位','背面座位':'背面坐位','しゃがみ':'蹲姿','前かがみ':'前倾','顔寄せ系':'贴脸','騎乗位':'骑乘位','立位':'立位','立位密着':'立位贴身','のけぞり・反り':'后仰','ひねり':'扭身','側位':'侧位','座位':'坐位','対面座位':'对面坐位','座位密着':'坐位贴身','密着':'贴身'}
 ANG={'正面':('正面','front view'),'上から':('俯拍','high angle, from above'),'下から':('仰拍','low angle, from below'),'横':('侧面','side view'),'斜め':('斜侧','three-quarter view')}
@@ -65,13 +68,13 @@ for d in rd:
 RJ=J(pors)
 if os.path.exists(f'{D}/data.js'): os.remove(f'{D}/data.js')
 for a,b in [('costume/thumbs','c/t'),('costume/img','c/i'),('anime/thumbs','a/t'),('anime/img','a/i')]:
-  shutil.copytree(f'{R}/{a}',f'{D}/{b}',dirs_exist_ok=True)
+  shutil.copytree(f'{R}/{a}',f'{AROOT if b.endswith("/t") else D}/{b}',dirs_exist_ok=True)
 os.makedirs(f'{D}/p/i',exist_ok=True)
 def cv(d):
-  t=f"{D}/p/t/{d['id']}.webp"
+  t=f"{AROOT}/p/t/{d['id']}.webp"
   if not os.path.exists(t):
     im=Image.open(f"{R}/pose/{d['サムネ']}").convert('RGB');im.save(t,'WEBP',quality=80,method=6)
-  o=f"{D}/o/p/{d['id']}.png"
+  o=f"{AROOT}/o/p/{d['id']}.png"
   if not os.path.exists(o): os.link(f"{R}/pose/{d['原寸']}",o)
   o=f"{D}/p/i/{d['id']}.webp"
   if not os.path.exists(o):
@@ -81,26 +84,33 @@ def cm(d):
   o=f"{D}/c/m/{d['id']}.webp"
   if not os.path.exists(o):
     im=Image.open(f"{R}/costume/{d['画像']}").convert('RGB'); im.thumbnail((1080,1620)); im.save(o,'WEBP',quality=80)
-  o=f"{D}/o/c/{d['id']}.png"
+  o=f"{AROOT}/o/c/{d['id']}.png"
   if not os.path.exists(o): os.link(f"{R}/costume/{d['原寸']}",o)
 def ca(d):
   o=f"{D}/a/m/{d['id']}.webp"
   if not os.path.exists(o):
     im=Image.open(f"{R}/anime/{d['画像']}").convert('RGB'); im.thumbnail((1080,1620)); im.save(o,'WEBP',quality=80)
-  o=f"{D}/o/a/{d['id']}.png"
+  o=f"{AROOT}/o/a/{d['id']}.png"
   if not os.path.exists(o): os.link(f"{R}/anime/{d['原寸']}",o)
 def cr(d):
-  t=f"{D}/r/t/{d['id']}.webp"
+  t=f"{AROOT}/r/t/{d['id']}.webp"
   if not os.path.exists(t): shutil.copy(f"{R}/portrait/{d['thumb']}",t)
   o=f"{D}/r/m/{d['id']}.webp"
   if not os.path.exists(o):
     im=Image.open(f"{R}/portrait/{d['full']}").convert('RGB'); im.thumbnail((1080,1350)); im.save(o,'WEBP',quality=80)
-  o=f"{D}/o/r/{d['id']}.png"
+  o=f"{AROOT}/o/r/{d['id']}.png"
   if not os.path.exists(o): os.link(f"{R}/portrait/{d['full']}",o)
-for x in ['p/t','c/m','o/p','o/c','a/m','o/a','r/t','r/m','o/r']: os.makedirs(f'{D}/{x}',exist_ok=True)
-if os.path.exists(f'{D}/p/t'):
-  for f in os.listdir(f'{D}/p/t'):
-    if f.endswith('.jpg'): os.remove(f'{D}/p/t/{f}')
+for x in ['p/t','c/m','o/p','o/c','a/m','o/a','r/t','r/m','o/r']: os.makedirs(f'{AROOT if x.endswith("/t") or x.startswith("o/") else D}/{x}',exist_ok=True)
+if AHOST:
+  # 分离模式下缩略图/原图改写到 dist-assets，删掉 dist 里上一轮单站构建残留的旧文件，
+  # 否则主站仍含这批文件、文件数压不回 2 万上限（Codex review on PR #4）
+  for _d in ['p/t','c/t','a/t','r/t','o']:
+    shutil.rmtree(f'{D}/{_d}',ignore_errors=True)
+if os.path.exists(f'{AROOT}/p/t'):
+  for f in os.listdir(f'{AROOT}/p/t'):
+    if f.endswith('.jpg'): os.remove(f'{AROOT}/p/t/{f}')
+if AHOST:
+  open(f'{AD}/_headers','w').write('/*\n  Cache-Control: public, max-age=31536000, immutable\n  Access-Control-Allow-Origin: *\n/o/*\n  Content-Disposition: attachment\n')
 with ProcessPoolExecutor() as ex: list(ex.map(cv,pd)); list(ex.map(cm,cd)); list(ex.map(ca,ad)); list(ex.map(cr,rd))
 # 深度姿势：只解析素材包里的文本，热链包不复制图片（见 depthpack.py）
 _dc=depthpack.catalog(); DJ=J(_dc['payload']); DEPTH_ORIGINS=_dc['origins']
