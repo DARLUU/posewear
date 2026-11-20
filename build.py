@@ -101,11 +101,16 @@ def cr(d):
   o=f"{AROOT}/o/r/{d['id']}.png"
   if not os.path.exists(o): os.link(f"{R}/portrait/{d['full']}",o)
 for x in ['p/t','c/m','o/p','o/c','a/m','o/a','r/t','r/m','o/r']: os.makedirs(f'{AROOT if x.endswith("/t") or x.startswith("o/") else D}/{x}',exist_ok=True)
+if AHOST:
+  # 分离模式下缩略图/原图改写到 dist-assets，删掉 dist 里上一轮单站构建残留的旧文件，
+  # 否则主站仍含这批文件、文件数压不回 2 万上限（Codex review on PR #4）
+  for _d in ['p/t','c/t','a/t','r/t','o']:
+    shutil.rmtree(f'{D}/{_d}',ignore_errors=True)
 if os.path.exists(f'{AROOT}/p/t'):
   for f in os.listdir(f'{AROOT}/p/t'):
     if f.endswith('.jpg'): os.remove(f'{AROOT}/p/t/{f}')
 if AHOST:
-  open(f'{AD}/_headers','w').write('/*\n  Cache-Control: public, max-age=31536000, immutable\n  Access-Control-Allow-Origin: *\n')
+  open(f'{AD}/_headers','w').write('/*\n  Cache-Control: public, max-age=31536000, immutable\n  Access-Control-Allow-Origin: *\n/o/*\n  Content-Disposition: attachment\n')
 with ProcessPoolExecutor() as ex: list(ex.map(cv,pd)); list(ex.map(cm,cd)); list(ex.map(ca,ad)); list(ex.map(cr,rd))
 # 深度姿势：只解析素材包里的文本，热链包不复制图片（见 depthpack.py）
 _dc=depthpack.catalog(); DJ=J(_dc['payload']); DEPTH_ORIGINS=_dc['origins']

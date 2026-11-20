@@ -26,11 +26,11 @@ def _curl(url, path):
     """urllib 经代理时偶发 IncompleteRead 中断，curl 更稳，作为兜底。"""
     import subprocess
     if path is None:
-        r = subprocess.run(['curl', '-sS', '-A', UA['User-Agent'], '--max-time', '90', url],
+        r = subprocess.run(['curl', '-sS', '-f', '-A', UA['User-Agent'], '--max-time', '90', url],
                            capture_output=True, timeout=120)
         return r.stdout if r.returncode == 0 and r.stdout else None
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    r = subprocess.run(['curl', '-sS', '-A', UA['User-Agent'], '--max-time', '90', '-o', path + '.part', url],
+    r = subprocess.run(['curl', '-sS', '-f', '-A', UA['User-Agent'], '--max-time', '90', '-o', path + '.part', url],
                        capture_output=True, timeout=120)
     if r.returncode == 0 and os.path.getsize(path + '.part') > 0:
         os.replace(path + '.part', path)
